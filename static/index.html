@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dağ Evi · Video Arşivi</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#eaf2ed;background:#10251f}*{box-sizing:border-box}body{margin:0}main{max-width:960px;margin:auto;padding:60px 24px}header{margin-bottom:36px}.tag{color:#a6d6b7;font-size:13px;letter-spacing:3px}h1{font-size:clamp(32px,6vw,54px);letter-spacing:-2px;margin:12px 0}p{color:#b8c9bf;line-height:1.6}.panel{background:#1b342b;border:1px solid #395347;border-radius:20px;padding:26px;margin:22px 0}label{display:block;margin-bottom:12px;font-weight:600}textarea,select,button{font:inherit;border-radius:10px;padding:13px}textarea{width:100%;min-height:140px;resize:vertical;background:#10251f;color:#fff;border:1px solid #547060}select{background:#10251f;color:#fff;border:1px solid #547060}button{background:#b7ed9d;color:#173420;border:0;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}.small{font-size:13px}h2{font-size:22px}.item{border-top:1px solid #395347;padding:18px 0;overflow-wrap:anywhere}.status{color:#c3eea9;font-weight:600}.detail{white-space:pre-wrap;font-size:13px;color:#b8c9bf;margin-top:8px}a{color:#c3eea9}#message,#warning{color:#ffd39f}video{width:100%;max-height:440px;margin-top:16px;border-radius:12px;background:#000}.empty{color:#a9beb1}footer{font-size:13px;color:#a9beb1}
+button.danger{background:#64352f;color:#ffe4df}
+</style>
+<main><header><div class="tag">DAĞ EVİ / ÇEVRİMDIŞI ARŞİV</div><h1>Videoların seninle gelsin.</h1><p>İnternet varken bağlantıları ekle, indir. Dağ evinde istediğin zaman izle.</p></header>
+<section class="panel"><form id="form"><label for="urls">YouTube bağlantıları</label><textarea id="urls" placeholder="https://www.youtube.com/watch?v=…&#10;Her satıra bir bağlantı" required></textarea><div class="row"><label for="quality" style="margin:0">En yüksek kalite</label><select id="quality"><option value="360">360p · Az yer</option><option value="480">480p</option><option value="720" selected>720p · Dengeli</option><option value="1080">1080p · Full HD</option></select><button id="submit">İndirme sırasına ekle</button></div></form><p class="small">Bir defada en fazla 30 bağlantı. Oynatma listesi bağlantılarında yalnızca seçilen video indirilir. İndirme sırasında uygulamayı açık tut.</p><p id="warning" role="status"></p><p id="message" role="status"></p></section>
+<section class="panel"><h2>İndirme sırası</h2><div id="jobs"></div></section>
+<section class="panel"><h2>İndirilen videolar</h2><p id="folder" class="small"></p><p id="file-message" role="status"></p><div id="files"></div><video id="player" controls hidden></video></section>
+<footer>Dosyalar bilgisayarındaki downloads klasöründe kalır. Bu sayfayı açmadan da bir video oynatıcıyla izleyebilirsin.</footer></main>
+<script>
+let token=''; const $=id=>document.getElementById(id);
+function el(tag,text,cls){const node=document.createElement(tag);node.textContent=text;if(cls)node.className=cls;return node}
+async function deleteVideo(name,button){
+  if(!confirm('Bu video bilgisayarından kalıcı olarak silinsin mi?\n\n'+name))return;
+  button.disabled=true;
+  try{
+    const response=await fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':token},body:JSON.stringify({name})});
+    const result=await response.json();
+    if(!response.ok)throw Error(result.error);
+    const player=$('player');
+    if(player.getAttribute('src')==='/downloads/'+encodeURIComponent(name)){
+      player.pause();player.removeAttribute('src');player.load();player.hidden=true;
+    }
+    $('file-message').textContent='Video silindi.';
+    await refresh();
+  }catch(error){$('file-message').textContent=error.message}
+  finally{button.disabled=false}
+}
+async function refresh(){try{const response=await fetch('/api/state');if(!response.ok)throw Error();const state=await response.json();token=state.token;$('warning').textContent=state.ffmpeg?'':'FFmpeg bulunamadı. Kurulum için README.md dosyasını aç.';$('folder').textContent='Kayıt klasörü: '+state.folder;$('jobs').replaceChildren();if(!state.jobs.length)$('jobs').append(el('p','Henüz sırada video yok.','empty'));for(const job of [...state.jobs].reverse()){const item=el('div','','item');item.append(el('div',job.status+' · '+job.quality+'p','status'),el('div',job.url,'small'),el('div',job.detail,'detail'));$('jobs').append(item)}$('files').replaceChildren();if(!state.files.length)$('files').append(el('p','İndirdiğin videolar burada görünecek.','empty'));for(const file of state.files){const item=el('div','','item');item.append(el('div',file.name),el('p',file.size+' MB','small'));const row=el('div','','row');const play=el('button','İzle');play.onclick=()=>{$('player').hidden=false;$('player').src='/downloads/'+encodeURIComponent(file.name);$('player').play().catch(()=>{});$('player').scrollIntoView({behavior:'smooth'})};const link=el('a','Dosyayı kaydet');link.href='/downloads/'+encodeURIComponent(file.name);link.download=file.name;const remove=el('button','Sil','danger');remove.onclick=()=>deleteVideo(file.name,remove);row.append(play,link,remove);item.append(row);$('files').append(item)}}catch{$('message').textContent='Uygulamaya ulaşılamıyor. Python uygulamasının açık olduğundan emin ol.'}}
+$('form').onsubmit=async event=>{event.preventDefault();$('submit').disabled=true;$('message').textContent='';try{const response=await fetch('/api/download',{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':token},body:JSON.stringify({urls:$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean),quality:$('quality').value})});const result=await response.json();if(!response.ok)throw Error(result.error);$('message').textContent='Bağlantılar sıraya eklendi.';$('urls').value='';await refresh()}catch(error){$('message').textContent=error.message}finally{$('submit').disabled=false}};refresh();setInterval(refresh,2000);
+</script></html>
