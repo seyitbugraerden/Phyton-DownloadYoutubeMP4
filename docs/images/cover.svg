@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="480" viewBox="0 0 1280 480" role="img" aria-labelledby="title desc">
+<title id="title">Dağ Evi — Videoların seninle gelsin.</title><desc id="desc">Koyu yeşil dağ silueti üzerinde yerel YouTube video arşivi başlığı.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#10251f"/><stop offset="1" stop-color="#254b3a"/></linearGradient></defs>
+<rect width="1280" height="480" rx="24" fill="url(#bg)"/>
+<circle cx="1090" cy="110" r="58" fill="#b7ed9d" opacity=".15"/>
+<path d="M650 480 920 118 1120 390 1220 240 1280 330V480Z" fill="#365e48"/>
+<path d="m920 118-60 81 59-22 53 13Z" fill="#b7ed9d" opacity=".65"/>
+<path d="M500 480 770 280 910 409 1060 298 1280 480Z" fill="#19392c"/>
+<text x="72" y="85" fill="#a6d6b7" font-family="Arial,sans-serif" font-size="16" letter-spacing="5">YOUTUBE / ÇEVRİMDIŞI ARŞİV</text>
+<text x="68" y="190" fill="#eaf2ed" font-family="Arial,sans-serif" font-size="80" font-weight="700">Dağ Evi</text>
+<text x="72" y="254" fill="#eaf2ed" font-family="Arial,sans-serif" font-size="34">Videoların seninle gelsin.</text>
+<text x="72" y="301" fill="#b8c9bf" font-family="Arial,sans-serif" font-size="21">Bağlantıları ekle. MP4 olarak indir. İstediğin zaman izle.</text>
+<rect x="72" y="351" width="139" height="40" rx="20" fill="#b7ed9d"/>
+<text x="141" y="377" text-anchor="middle" fill="#173420" font-family="Arial,sans-serif" font-size="15" font-weight="700">360p – 1080p</text>
+<text x="235" y="377" fill="#b8c9bf" font-family="Arial,sans-serif" font-size="16">Python · yt-dlp · Yerel web arayüzü</text>
+</svg>
